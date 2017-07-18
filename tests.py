@@ -2,12 +2,16 @@ from collections import OrderedDict
 from test.support import captured_stdin
 from test.support import captured_stdout
 import unittest
+import unittest.mock
 
 from work_log import ConsoleUI
+from work_log import Entry
+from work_log import initialize
 
 
 # create a menu that allows you to add entries, lookup entries, or quit
 class TestConsoleUI(unittest.TestCase):
+    """Run Tests on the Console User Interface"""
     def test_main_menu(self):
         """Test the ConsoleUI object main_menu is valid"""
         console = ConsoleUI()
@@ -24,6 +28,70 @@ class TestConsoleUI(unittest.TestCase):
                                              '[L] Lookup Previous Entries\n'
                                              '[Q] Quit Work Log\n'))
 
+    @unittest.mock.patch('work_log.os')  # assign a mock OS to work_log.py
+    def test_clear_screen(self, mock_os):
+        """Test the clear console method"""
+        ConsoleUI.clear_console()
+        mock_os.system.assert_called()
+
+    def test_format_header(self):
+        """Test the format_header() method"""
+        self.assertEqual(ConsoleUI.format_header('testing123'), ('       testing123\n'
+                                                                 '========================'))
+
+    def test_get_positive_int_regular(self):
+        """Test the get_positive_int() method with a valid input"""
+        with captured_stdin() as stdin:
+            stdin.write('5\n')
+            stdin.seek(0)
+            self.assertEqual(ConsoleUI.get_positive_int('test'), 5)
+
+    @unittest.expectedFailure
+    def test_get_positive_int_with_string(self):
+        """The get_positive_int() method should be able to handle ValueError"""
+        with self.assertRaises(ValueError):
+            with captured_stdin() as stdin:
+                stdin.write('five\n')
+                stdin.seek(0)
+                ConsoleUI.get_positive_int('test')
+
+    def test_get_positive_int_with_negative(self):
+        """The get_positive_int() method should be able to handle a negative number"""
+        with self.assertRaises(EOFError):
+            with captured_stdin() as stdin, captured_stdout() as stdout:
+                stdin.write('-5\n')
+                stdin.seek(0)
+                ConsoleUI.get_positive_int('test')
+
+    def test_get_required_string(self):
+        """Should get a string from the user"""
+        with captured_stdin() as stdin:
+            stdin.write('testing123\n')
+            stdin.seek(0)
+            self.assertEqual(ConsoleUI.get_required_string('BLAH'), 'testing123')
+
+    def test_get_required_string_with_empty_input(self):
+        """Should ask again if given an empty string - test should throw EOFError"""
+        with self.assertRaises(EOFError):
+            with captured_stdin() as stdin:
+                stdin.write('\n')
+                stdin.seek(0)
+                self.assertEqual(ConsoleUI.get_required_string('BLAH'), '')
+
+
+class TestEntryClass(unittest.TestCase):
+    """Run Tests on the Database Model Object"""
+    def setUp(self):
+        initialize()
+
+    def test_entry_string(self):
+        """Test the Entry is represented as a string in the correct format"""
+        entry = Entry.get()
+        self.assertEqual(str(entry), ('Task: {}'.format(entry.task_name)+'\n'
+                                      'Created: {}'.format(entry.created_timestamp.strftime('%B %d, %Y'))+'\n'
+                                      'Worker: {}'.format(entry.worker_name)+'\n'
+                                      'Minutes Spent: {}'.format(entry.task_time)+'\n'
+                                      'Notes: {}'.format(entry.task_notes)))
 
 if __name__ == '__main__':
     unittest.main()
