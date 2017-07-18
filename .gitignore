@@ -8,6 +8,16 @@ Desktop.ini
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 
+# pycharm stuff
+.idea
+
+# coverage unit testing stuff
+.coverage
+htmlcov
+
+# cache files
+__pycache__
+
 # Windows Installer files
 *.cab
 *.msi
