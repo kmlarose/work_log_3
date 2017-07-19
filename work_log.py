@@ -9,7 +9,7 @@ db = SqliteDatabase('work_log.db')
 
 class Entry(Model):
     """Database model for Work Log Entries"""
-    worker_name = TextField()
+    employee_name = TextField()
     task_name = TextField()
     task_time = IntegerField()
     task_notes = TextField()
@@ -22,7 +22,7 @@ class Entry(Model):
         """Presents the Entry in a readable str format"""
         return ('Task: {}'.format(self.task_name)+'\n'
                 'Created: {}'.format(self.created_timestamp.strftime('%B %d, %Y'))+'\n'
-                'Worker: {}'.format(self.worker_name)+'\n'
+                'Employee: {}'.format(self.employee_name)+'\n'
                 'Minutes Spent: {}'.format(self.task_time)+'\n'
                 'Notes: {}'.format(self.task_notes))
 
@@ -52,7 +52,7 @@ class ConsoleUI:
         task_notes = input("Notes (optional): ")
 
         if input('Save entry? [Y/n] ').lower() != 'n':
-            Entry.create(worker_name=employee_name, task_name=task_name, task_time=task_time, task_notes=task_notes)
+            Entry.create(employee_name=employee_name, task_name=task_name, task_time=task_time, task_notes=task_notes)
 
     def display_main_menu(self):
         """Prints the Main Menu to Console"""

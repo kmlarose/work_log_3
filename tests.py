@@ -3,6 +3,7 @@ from test.support import captured_stdin
 from test.support import captured_stdout
 import unittest
 import unittest.mock
+from unittest.mock import MagicMock
 
 from work_log import ConsoleUI
 from work_log import Entry
@@ -78,20 +79,37 @@ class TestConsoleUI(unittest.TestCase):
                 stdin.seek(0)
                 self.assertEqual(ConsoleUI.get_required_string('BLAH'), '')
 
+    @unittest.expectedFailure
+    def test_quit_main_menu(self):
+        """Test quitting the main menu"""
+        with self.assertRaises(EOFError):
+            with captured_stdin() as stdin:
+                stdin.write('q')
+                stdin.seek(0)
+                test_console = ConsoleUI()
+                test_console.run_console_ui()
+
 
 class TestEntryClass(unittest.TestCase):
     """Run Tests on the Database Model Object"""
-    def setUp(self):
-        initialize()
-
     def test_entry_string(self):
         """Test the Entry is represented as a string in the correct format"""
         entry = Entry.get()
         self.assertEqual(str(entry), ('Task: {}'.format(entry.task_name)+'\n'
                                       'Created: {}'.format(entry.created_timestamp.strftime('%B %d, %Y'))+'\n'
-                                      'Worker: {}'.format(entry.worker_name)+'\n'
+                                      'Employee: {}'.format(entry.employee_name)+'\n'
                                       'Minutes Spent: {}'.format(entry.task_time)+'\n'
                                       'Notes: {}'.format(entry.task_notes)))
+
+    def test_mock_db_add(self):
+        """Test adding to the database with a MagicMock object"""
+        with captured_stdin() as stdin:
+            stdin.write('123\n')
+            stdin.seek(0)
+            Entry.create = MagicMock(return_value=True)
+            test_console = ConsoleUI()
+            test_console.add_new_entry()
+        Entry.create.assert_called_with(employee_name='123', task_name='123', task_time=123, task_notes='123')
 
 if __name__ == '__main__':
     unittest.main()

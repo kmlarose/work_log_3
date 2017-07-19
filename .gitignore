@@ -15,6 +15,9 @@ $RECYCLE.BIN/
 .coverage
 htmlcov
 
+# sqlite3
+sqlite3.exe
+
 # cache files
 __pycache__
 
