@@ -54,6 +54,19 @@ class ConsoleUI:
         if input('Save entry? [Y/n] ').lower() != 'n':
             Entry.create(employee_name=employee_name, task_name=task_name, task_time=task_time, task_notes=task_notes)
 
+    def lookup_entries(self):
+        """Lookup Previous Entries"""
+        return Entry.select().order_by(Entry.created_timestamp.desc())
+
+        # if there are no results, return some kind of message
+        # if there is no search query, then just get 'em all? i guess
+        # if there is a search query, then get the filtered query
+
+
+        #############################################################################
+
+    #######################################################################################
+
     def display_main_menu(self):
         """Prints the Main Menu to Console"""
         [print(key, value) for key, value in self.main_menu.items()]
@@ -67,6 +80,9 @@ class ConsoleUI:
             main_menu_choice = input('> ').upper().strip()
             if main_menu_choice == 'A':
                 self.add_new_entry()
+            if main_menu_choice == 'L':
+                entries = self.lookup_entries()
+                [print(entry) for entry in entries]
 
     @staticmethod
     def get_required_string(required_string_label):
