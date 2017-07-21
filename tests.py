@@ -2,8 +2,8 @@ from collections import OrderedDict
 from test.support import captured_stdin
 from test.support import captured_stdout
 import unittest
-import unittest.mock
-from unittest.mock import MagicMock
+from unittest import mock
+from unittest.mock import MagicMock, patch
 
 from work_log import ConsoleUI
 from work_log import Entry
@@ -98,6 +98,12 @@ class TestConsoleUI(unittest.TestCase):
             stdin.seek(0)
             with self.assertRaises(EOFError):
                 test_console.display_one_at_a_time(Entry.select())
+
+    # @patch('builtins.input', lambda: '123')
+    def test_add_entry(self):
+        test_console = ConsoleUI()
+        with unittest.mock.patch('builtins.input', side_effect=['Test Name', 'Test Task', '999', 'Test Notes', 'y)']):
+            test_console.add_new_entry()
 
 
 class TestEntryClass(unittest.TestCase):
