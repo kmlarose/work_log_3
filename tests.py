@@ -89,6 +89,16 @@ class TestConsoleUI(unittest.TestCase):
                 test_console = ConsoleUI()
                 test_console.run_console_ui()
 
+    @unittest.expectedFailure
+    def test_display_one_at_a_time(self):
+        """Make sure the user input 'b' will break out of the Lookup Menu"""
+        test_console = ConsoleUI()
+        with captured_stdin() as stdin:
+            stdin.write('b')
+            stdin.seek(0)
+            with self.assertRaises(EOFError):
+                test_console.display_one_at_a_time(Entry.select())
+
 
 class TestEntryClass(unittest.TestCase):
     """Run Tests on the Database Model Object"""
@@ -100,6 +110,11 @@ class TestEntryClass(unittest.TestCase):
                                       'Employee: {}'.format(entry.employee_name)+'\n'
                                       'Minutes Spent: {}'.format(entry.task_time)+'\n'
                                       'Notes: {}'.format(entry.task_notes)))
+
+    # def test_db_initialize(self):
+    #     initialize()
+
+
 
     # def test_mock_db_add(self):
     #     """Test adding to the database with a MagicMock object"""

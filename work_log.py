@@ -69,6 +69,7 @@ class ConsoleUI:
             print(ConsoleUI.format_header('Entry {} of {}'.format(idx+1, len(entries))))
             print(entry)
             print('='*24)
+            print('[D] Delete Entry')
             if not is_first_entry:
                 print('[P] Previous Entry')
             if not is_last_entry:
@@ -77,7 +78,10 @@ class ConsoleUI:
 
             # handle user input
             lookup_menu_choice = input('> ').upper().strip()
-            if lookup_menu_choice == 'P' and not is_first_entry:
+            if lookup_menu_choice == 'D':
+                if ConsoleUI.delete_entry(entry):
+                    break
+            elif lookup_menu_choice == 'P' and not is_first_entry:
                 idx -= 1
             elif lookup_menu_choice == 'N' and not is_last_entry:
                 idx += 1
@@ -141,6 +145,13 @@ class ConsoleUI:
         margin = ' ' * int(leftover_space / 2)
         return margin + screen_title + '\n' + ('=' * 24)
 
+    @staticmethod
+    def delete_entry(entry):
+        """Delete Entry"""
+        if input('Are you sure? [y/N]').lower().strip() == 'y':
+            entry.delete_instance()
+            return True
+        return False
 
 if __name__ == "__main__":
     initialize()
