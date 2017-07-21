@@ -54,18 +54,38 @@ class ConsoleUI:
         if input('Save entry? [Y/n] ').lower() != 'n':
             Entry.create(employee_name=employee_name, task_name=task_name, task_time=task_time, task_notes=task_notes)
 
+    def display_one_at_a_time(self, entries):
+        """Display the Entries One At A Time"""
+        idx = 0
+        lookup_menu_choice = None
+        while lookup_menu_choice != 'B':
+            # set up variables
+            entry = entries[idx]
+            is_first_entry = idx == 0
+            is_last_entry = idx == len(entries) - 1
+
+            # display the header, entry, and menu
+            self.clear_console()
+            print(ConsoleUI.format_header('Entry {} of {}'.format(idx+1, len(entries))))
+            print(entry)
+            print('='*24)
+            if not is_first_entry:
+                print('[P] Previous Entry')
+            if not is_last_entry:
+                print('[N] Next Entry')
+            print('[B] Back to Main Menu')
+
+            # handle user input
+            lookup_menu_choice = input('> ').upper().strip()
+            if lookup_menu_choice == 'P' and not is_first_entry:
+                idx -= 1
+            elif lookup_menu_choice == 'N' and not is_last_entry:
+                idx += 1
+
     def lookup_entries(self):
         """Lookup Previous Entries"""
-        return Entry.select().order_by(Entry.created_timestamp.desc())
-
-        # if there are no results, return some kind of message
-        # if there is no search query, then just get 'em all? i guess
-        # if there is a search query, then get the filtered query
-
-
-        #############################################################################
-
-    #######################################################################################
+        entries = Entry.select().order_by(Entry.created_timestamp.desc())
+        self.display_one_at_a_time(entries)
 
     def display_main_menu(self):
         """Prints the Main Menu to Console"""
@@ -81,8 +101,8 @@ class ConsoleUI:
             if main_menu_choice == 'A':
                 self.add_new_entry()
             if main_menu_choice == 'L':
-                entries = self.lookup_entries()
-                [print(entry) for entry in entries]
+                self.lookup_entries()
+
 
     @staticmethod
     def get_required_string(required_string_label):
