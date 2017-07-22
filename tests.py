@@ -1,35 +1,46 @@
 from collections import OrderedDict
 from test.support import captured_stdin
 from test.support import captured_stdout
+import datetime
 import unittest
 from unittest import mock
-from unittest.mock import MagicMock, patch
 
 from work_log import ConsoleUI
 from work_log import Entry
-from work_log import initialize
 
 
-# create a menu that allows you to add entries, lookup entries, or quit
 class TestConsoleUI(unittest.TestCase):
     """Run Tests on the Console User Interface"""
     def test_main_menu(self):
         """Test the ConsoleUI object main_menu is valid"""
-        console = ConsoleUI()
-        self.assertEqual(console.main_menu, OrderedDict([('[A]', 'Add New Entry'),
+        test_console = ConsoleUI()
+        self.assertEqual(test_console.main_menu, OrderedDict([('[A]', 'Add New Entry'),
                                                          ('[L]', 'Lookup Previous Entries'),
                                                          ('[Q]', 'Quit Work Log')]))
 
     def test_display_main_menu(self):
         """Test the display_main_menu() method has the right output"""
         with captured_stdout() as stdout:
-            console = ConsoleUI()
-            console.display_main_menu()
+            test_console = ConsoleUI()
+            test_console.display_main_menu()
         self.assertEqual(stdout.getvalue(), ('[A] Add New Entry\n'
                                              '[L] Lookup Previous Entries\n'
                                              '[Q] Quit Work Log\n'))
 
-    @unittest.mock.patch('work_log.os')  # assign a mock OS to work_log.py
+    def test_run_edit_menu(self):
+        """Test the edit menu has the right output"""
+        with captured_stdin() as stdin, captured_stdout() as stdout:
+            console = ConsoleUI()
+            stdin.write('b')
+            stdin.seek(0)
+            console.run_edit_menu(Entry.get())
+            self.assertIn(('[D] Edit Created Date\n'
+                           '[T] Edit Task Name\n'
+                           '[M] Edit Minutes Spent\n'
+                           '[N] Edit Notes\n'
+                           '[B] Back to Main Menu\n'), stdout.getvalue())
+
+    @unittest.mock.patch('work_log.os')
     def test_clear_screen(self, mock_os):
         """Test the clear console method"""
         ConsoleUI.clear_console()
@@ -99,11 +110,64 @@ class TestConsoleUI(unittest.TestCase):
             with self.assertRaises(EOFError):
                 test_console.display_one_at_a_time(Entry.select())
 
-    # @patch('builtins.input', lambda: '123')
     def test_add_entry(self):
         test_console = ConsoleUI()
-        with unittest.mock.patch('builtins.input', side_effect=['Test Name', 'Test Task', '999', 'Test Notes', 'y)']):
+        with unittest.mock.patch('builtins.input', side_effect=['Test Name', 'Test Task', '999', 'Test Notes', 'y']):
+            self.assertTrue(test_console.add_new_entry())
+        with unittest.mock.patch('builtins.input', side_effect=['Test Name', 'Test Task', '999', 'Test Notes', 'n']):
+            self.assertFalse(test_console.add_new_entry())
+
+    def test_edit_entry_date(self):
+        test_console = ConsoleUI()
+        with unittest.mock.patch('builtins.input', side_effect=['Test Name', 'Test Task', '999', 'Test Notes', 'y']):
             test_console.add_new_entry()
+        with unittest.mock.patch('builtins.input', side_effect=['d', '01-01-1980', 'y']):
+            entry = Entry.select().where(Entry.task_name == 'Test Task')[0]
+            test_console.run_edit_menu(entry)
+            self.assertEqual(entry.created_timestamp, datetime.datetime.strptime('01-01-1980', '%m-%d-%Y'))
+        with unittest.mock.patch('builtins.input', return_value='y'):
+            self.assertTrue(test_console.delete_entry(entry))
+
+    def test_edit_entry_name(self):
+        test_console = ConsoleUI()
+        with unittest.mock.patch('builtins.input', side_effect=['Test Name', 'Test Task', '999', 'Test Notes', 'y']):
+            test_console.add_new_entry()
+        with unittest.mock.patch('builtins.input', side_effect=['t', 'did it work?', 'y']):
+            entry = Entry.select().where(Entry.task_name == 'Test Task')[0]
+            test_console.run_edit_menu(entry)
+            self.assertEqual(entry.task_name, 'did it work?')
+        with unittest.mock.patch('builtins.input', return_value='y'):
+            self.assertTrue(test_console.delete_entry(entry))
+
+    def test_edit_entry_minutes(self):
+        test_console = ConsoleUI()
+        with unittest.mock.patch('builtins.input', side_effect=['Test Name', 'Test Task', '999', 'Test Notes', 'y']):
+            test_console.add_new_entry()
+        with unittest.mock.patch('builtins.input', side_effect=['m', '888', 'y']):
+            entry = Entry.select().where(Entry.task_name == 'Test Task')[0]
+            test_console.run_edit_menu(entry)
+            self.assertEqual(entry.task_time, 888)
+        with unittest.mock.patch('builtins.input', return_value='y'):
+            self.assertTrue(test_console.delete_entry(entry))
+
+    def test_edit_entry_notes(self):
+        test_console = ConsoleUI()
+        with unittest.mock.patch('builtins.input', side_effect=['Test Name', 'Test Task', '999', 'Test Notes', 'y']):
+            test_console.add_new_entry()
+        with unittest.mock.patch('builtins.input', side_effect=['n', 'keep it real', 'y']):
+            entry = Entry.select().where(Entry.task_name == 'Test Task')[0]
+            test_console.run_edit_menu(entry)
+            self.assertEqual(entry.task_notes, 'keep it real')
+        with unittest.mock.patch('builtins.input', return_value='y'):
+            self.assertTrue(test_console.delete_entry(entry))
+
+    def test_delete_entry(self):
+        test_console = ConsoleUI()
+        entry = Entry.select().where(Entry.task_name == 'Test Task')[0]
+        with unittest.mock.patch('builtins.input', return_value='n'):
+            self.assertFalse(test_console.delete_entry(entry))
+        with unittest.mock.patch('builtins.input', return_value='y'):
+            self.assertTrue(test_console.delete_entry(entry))
 
 
 class TestEntryClass(unittest.TestCase):
@@ -116,22 +180,6 @@ class TestEntryClass(unittest.TestCase):
                                       'Employee: {}'.format(entry.employee_name)+'\n'
                                       'Minutes Spent: {}'.format(entry.task_time)+'\n'
                                       'Notes: {}'.format(entry.task_notes)))
-
-    # def test_db_initialize(self):
-    #     initialize()
-
-
-
-    # def test_mock_db_add(self):
-    #     """Test adding to the database with a MagicMock object"""
-    #     with captured_stdin() as stdin:
-    #         import pdb; pdb.set_trace()
-    #         stdin.write('123\n')
-    #         stdin.seek(0)
-    #         Entry.create = MagicMock(return_value=True)
-    #         test_console = ConsoleUI()
-    #         test_console.add_new_entry()
-    #     Entry.create.assert_called_with(employee_name='123', task_name='123', task_time=123, task_notes='123')
 
 if __name__ == '__main__':
     unittest.main()

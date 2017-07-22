@@ -41,6 +41,47 @@ class ConsoleUI:
         ('[Q]', 'Quit Work Log')
     ])
 
+    def run_edit_menu(self, entry):
+        """Display the Edit an Entry Menu"""
+        edit_menu_choice = None
+        while edit_menu_choice != 'B':
+            self.clear_console()
+            print(self.format_header('Edit Entry'))
+            print(entry)
+            print('='*24)
+            print('[D] Edit Created Date\n'
+                  '[T] Edit Task Name\n'
+                  '[M] Edit Minutes Spent\n'
+                  '[N] Edit Notes\n'
+                  '[B] Back to Main Menu')
+
+            # handle user input
+            edit_menu_choice = input('> ').upper().strip()
+            if edit_menu_choice == 'D':
+                new_task_date = self.get_a_date('New Created Date')
+                if input('Are you sure? [y/N]: ').lower().strip() == 'y':
+                    entry.created_timestamp = new_task_date
+                    entry.save()
+                    break
+            elif edit_menu_choice == 'T':
+                new_task_name = self.get_required_string('New Task Name')
+                if input('Are you sure? [y/N]: ').lower().strip() == 'y':
+                    entry.task_name = new_task_name
+                    entry.save()
+                    break
+            elif edit_menu_choice == 'M':
+                new_task_minutes = self.get_positive_int('New Task Time (minutes)')
+                if input('Are you sure? [y/N]: ').lower().strip() == 'y':
+                    entry.task_time = new_task_minutes
+                    entry.save()
+                    break
+            elif edit_menu_choice == 'N':
+                new_task_notes = self.get_required_string('New Task Notes')
+                if input('Are you sure? [y/N]: ').lower().strip() == 'y':
+                    entry.task_notes = new_task_notes
+                    entry.save()
+                    break
+
     def add_new_entry(self):
         """Add New Entry"""
         self.clear_console()
@@ -53,6 +94,8 @@ class ConsoleUI:
 
         if input('Save entry? [Y/n] ').lower() != 'n':
             Entry.create(employee_name=employee_name, task_name=task_name, task_time=task_time, task_notes=task_notes)
+            return True
+        return False
 
     def display_one_at_a_time(self, entries):
         """Display the Entries One At A Time"""
@@ -69,6 +112,7 @@ class ConsoleUI:
             print(ConsoleUI.format_header('Entry {} of {}'.format(idx+1, len(entries))))
             print(entry)
             print('='*24)
+            print('[E] Edit Entry')
             print('[D] Delete Entry')
             if not is_first_entry:
                 print('[P] Previous Entry')
@@ -78,7 +122,9 @@ class ConsoleUI:
 
             # handle user input
             lookup_menu_choice = input('> ').upper().strip()
-            if lookup_menu_choice == 'D':
+            if lookup_menu_choice == 'E':
+                self.run_edit_menu(entry)
+            elif lookup_menu_choice == 'D':
                 if ConsoleUI.delete_entry(entry):
                     break
             elif lookup_menu_choice == 'P' and not is_first_entry:
@@ -107,6 +153,17 @@ class ConsoleUI:
             if main_menu_choice == 'L':
                 self.lookup_entries()
 
+    @staticmethod
+    def get_a_date(date_label):
+        """Gets a date from the user"""
+        while True:
+            date = input('{} (MM-DD-YYYY): '.format(date_label))
+            try:
+                date = datetime.datetime.strptime(date, '%m-%d-%Y')
+            except ValueError:
+                print('Please enter a date in the valid format, (MM-DD-YYYY): ')
+            else:
+                return date
 
     @staticmethod
     def get_required_string(required_string_label):
