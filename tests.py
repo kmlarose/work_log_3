@@ -138,8 +138,6 @@ class TestConsoleUI(unittest.TestCase):
             entry = Entry.select().where(Entry.task_name == 'Test Task')[0]
             test_console.run_edit_menu(entry)
             self.assertEqual(entry.created_timestamp, datetime.datetime.strptime('01-01-1980', '%m-%d-%Y'))
-        with unittest.mock.patch('builtins.input', return_value='y'):
-            self.assertTrue(test_console.delete_entry(entry))
 
     def test_edit_entry_name(self):
         """Makes sure the Entry task name can be successfully edited"""
@@ -150,8 +148,6 @@ class TestConsoleUI(unittest.TestCase):
             entry = Entry.select().where(Entry.task_name == 'Test Task')[0]
             test_console.run_edit_menu(entry)
             self.assertEqual(entry.task_name, 'unittest')
-        with unittest.mock.patch('builtins.input', return_value='y'):
-            self.assertTrue(test_console.delete_entry(entry))
 
     def test_edit_entry_minutes(self):
         """Makes sure the Entry task time can be successfully edited"""
@@ -162,8 +158,6 @@ class TestConsoleUI(unittest.TestCase):
             entry = Entry.select().where(Entry.task_name == 'Test Task')[0]
             test_console.run_edit_menu(entry)
             self.assertEqual(entry.task_time, 888)
-        with unittest.mock.patch('builtins.input', return_value='y'):
-            self.assertTrue(test_console.delete_entry(entry))
 
     def test_edit_entry_notes(self):
         """Makes sure the Entry notes can be successfully edited"""
@@ -174,8 +168,6 @@ class TestConsoleUI(unittest.TestCase):
             entry = Entry.select().where(Entry.task_name == 'Test Task')[0]
             test_console.run_edit_menu(entry)
             self.assertEqual(entry.task_notes, 'keep it real')
-        with unittest.mock.patch('builtins.input', return_value='y'):
-            self.assertTrue(test_console.delete_entry(entry))
 
     def test_delete_entry(self):
         """Makes sure Entries can be deleted"""
@@ -198,8 +190,6 @@ class TestConsoleUI(unittest.TestCase):
         with unittest.mock.patch('builtins.input', side_effect=['t', '777888', 'b', 'b']), captured_stdout() as stdout:
             test_console.lookup_entries()
             self.assertIn('Test Time Lookup', stdout.getvalue())
-        with unittest.mock.patch('builtins.input', return_value='y'):
-            self.assertTrue(test_console.delete_entry(Entry.select().where(Entry.task_name == 'Test Time Lookup')[0]))
 
     def test_lookup_by_search(self):
         """Makes sure entries can be looked up by search term"""
@@ -210,8 +200,6 @@ class TestConsoleUI(unittest.TestCase):
         with unittest.mock.patch('builtins.input', side_effect=['s', 'search', 'b', 'b']), captured_stdout() as stdout:
             test_console.lookup_entries()
             self.assertIn('Test Search Lookup', stdout.getvalue())
-        with unittest.mock.patch('builtins.input', return_value='y'):
-            self.assertTrue(test_console.delete_entry(Entry.select().where(Entry.task_name == 'Test Search Lookup')[0]))
 
     def test_lookup_by_name(self):
         """Makes sure entries can be looked up by worker name"""
@@ -223,8 +211,6 @@ class TestConsoleUI(unittest.TestCase):
                                  side_effect=['n', 'unittest', 'b', 'b']), captured_stdout() as stdout:
             test_console.lookup_entries()
             self.assertIn('Test Name Lookup', stdout.getvalue())
-        with unittest.mock.patch('builtins.input', return_value='y'):
-            self.assertTrue(test_console.delete_entry(Entry.select().where(Entry.task_name == 'Test Name Lookup')[0]))
 
     def test_lookup_by_multiple_names(self):
         """Makes sure name lookup can handle multiple name matches"""
@@ -239,10 +225,6 @@ class TestConsoleUI(unittest.TestCase):
                                  side_effect=['n', 'unittest', 'unittest', 'b', 'b']), captured_stdout() as stdout:
             test_console.lookup_entries()
             self.assertIn('1 of 1', stdout.getvalue())
-        with unittest.mock.patch('builtins.input', return_value='y'):
-            self.assertTrue(test_console.delete_entry(Entry.select().where(Entry.task_name == 'Test Name Lookup')[0]))
-        with unittest.mock.patch('builtins.input', return_value='y'):
-            self.assertTrue(test_console.delete_entry(Entry.select().where(Entry.task_name == 'Test Name Lookup')[0]))
 
     def test_lookup_by_exact_date(self):
         """Makes sure entries can be looked up by exact date"""
@@ -258,8 +240,6 @@ class TestConsoleUI(unittest.TestCase):
             with captured_stdout() as stdout:
                 test_console.lookup_entries()
                 self.assertIn('Test Date Lookup', stdout.getvalue())
-        # with unittest.mock.patch('builtins.input', return_value='y'):
-        #     self.assertTrue(test_console.delete_entry(Entry.select().where(Entry.task_name == 'Test Date Lookup')[0]))
 
     def test_lookup_by_date_range(self):
         """Makes sure entries can be looked up by exact date"""
@@ -278,8 +258,6 @@ class TestConsoleUI(unittest.TestCase):
             with captured_stdout() as stdout:
                 test_console.lookup_entries()
                 self.assertIn('Test Date Lookup', stdout.getvalue())
-        # with unittest.mock.patch('builtins.input', return_value='y'):
-        #     self.assertTrue(test_console.delete_entry(Entry.select().where(Entry.task_name == 'Test Date Lookup')[0]))
 
     def tearDown(self):
         entries = Entry.select()
