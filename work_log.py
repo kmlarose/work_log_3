@@ -99,38 +99,43 @@ class ConsoleUI:
 
     def display_one_at_a_time(self, entries):
         """Display the Entries One At A Time"""
-        idx = 0
-        lookup_menu_choice = None
-        while lookup_menu_choice != 'B':
-            # set up variables
-            entry = entries[idx]
-            is_first_entry = idx == 0
-            is_last_entry = idx == len(entries) - 1
-
-            # display the header, entry, and menu
+        if not entries:
             self.clear_console()
-            print(ConsoleUI.format_header('Entry {} of {}'.format(idx+1, len(entries))))
-            print(entry)
-            print('='*24)
-            print('[E] Edit Entry')
-            print('[D] Delete Entry')
-            if not is_first_entry:
-                print('[P] Previous Entry')
-            if not is_last_entry:
-                print('[N] Next Entry')
-            print('[B] Back to Main Menu')
+            print('Sorry, no entries found')
+            input('Please press enter to return to Main Menu...')
+        else:
+            idx = 0
+            lookup_menu_choice = None
+            while lookup_menu_choice != 'B':
+                # set up variables
+                entry = entries[idx]
+                is_first_entry = idx == 0
+                is_last_entry = idx == len(entries) - 1
 
-            # handle user input
-            lookup_menu_choice = input('> ').upper().strip()
-            if lookup_menu_choice == 'E':
-                self.run_edit_menu(entry)
-            elif lookup_menu_choice == 'D':
-                if ConsoleUI.delete_entry(entry):
-                    break
-            elif lookup_menu_choice == 'P' and not is_first_entry:
-                idx -= 1
-            elif lookup_menu_choice == 'N' and not is_last_entry:
-                idx += 1
+                # display the header, entry, and menu
+                self.clear_console()
+                print(ConsoleUI.format_header('Entry {} of {}'.format(idx+1, len(entries))))
+                print(entry)
+                print('='*24)
+                print('[E] Edit Entry')
+                print('[D] Delete Entry')
+                if not is_first_entry:
+                    print('[P] Previous Entry')
+                if not is_last_entry:
+                    print('[N] Next Entry')
+                print('[B] Back to Main Menu')
+
+                # handle user input
+                lookup_menu_choice = input('> ').upper().strip()
+                if lookup_menu_choice == 'E':
+                    self.run_edit_menu(entry)
+                elif lookup_menu_choice == 'D':
+                    if ConsoleUI.delete_entry(entry):
+                        break
+                elif lookup_menu_choice == 'P' and not is_first_entry:
+                    idx -= 1
+                elif lookup_menu_choice == 'N' and not is_last_entry:
+                    idx += 1
 
     def lookup_entries(self):
         """Lookup Previous Entries"""
@@ -139,6 +144,8 @@ class ConsoleUI:
 
     def display_main_menu(self):
         """Prints the Main Menu to Console"""
+        self.clear_console()
+        print(self.format_header('Work Log'))
         [print(key, value) for key, value in self.main_menu.items()]
 
     def run_console_ui(self):
