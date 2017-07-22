@@ -185,6 +185,57 @@ class ConsoleUI:
                 # no matches...
                 print('Please choose from the list of available names, or type "back" to return to lookup menu')
 
+    def lookup_entries_by_exact_date(self):
+        get_created_dates = Entry.select().distinct(Entry.created_timestamp).execute()
+        created_dates = set()
+        [created_dates.add(entry.created_timestamp.strftime('%m-%d-%Y')) for entry in get_created_dates]
+        created_dates = list(created_dates)
+        created_dates.sort()
+
+        self.clear_console()
+        print(self.format_header('Lookup by Exact Date'))
+        [print(date) for date in created_dates]
+        while True:
+            chosen_date = input('Enter a date to see entries from (MM-DD-YYYY): ')
+            try:
+                chosen_date = datetime.datetime.strptime(chosen_date, '%m-%d-%Y')
+            except ValueError:
+                print('Please enter a date in the valid format')
+            else:
+                if chosen_date.strftime('%m-%d-%Y') not in created_dates:
+                    print('hey-o! there are no entries with that date. Try another...')
+                else:
+                    break
+        entries = Entry.select().order_by(Entry.created_timestamp.desc())
+        entries = entries.where(Entry.created_timestamp.between(
+            chosen_date,
+            chosen_date + datetime.timedelta(days=1) - datetime.timedelta(seconds=1)
+        ))
+        self.display_one_at_a_time(entries)
+
+    def lookup_entries_by_date_range(self):
+        """Find Entries by Date Range"""
+        self.clear_console()
+        print(self.format_header('Lookup by Date Range'))
+        print('Search for entries from...')
+        from_date = ConsoleUI.get_a_date('enter From Date (MM-DD-YYY')
+        self.clear_console()
+        print(self.format_header('Lookup by Date Range'))
+        print('Search for entries from {} to...'.format(from_date.strftime('%m-%d-%Y')))
+        # get the end date
+        while True:
+            to_date = ConsoleUI.get_a_date('enter To date (MM-DD-YYYY)')
+            if to_date.strftime('%m-%d-%Y') < from_date.strftime('%m-%d-%Y'):
+                print('Please enter a date AFTER the From Date')
+            else:
+                break
+        entries = Entry.select().order_by(Entry.created_timestamp.desc())
+        entries = entries.where(Entry.created_timestamp.between(
+            from_date,
+            to_date + datetime.timedelta(days=1) - datetime.timedelta(seconds=1)
+        ))
+        self.display_one_at_a_time(entries)
+
     def lookup_entries(self):
         """Lookup Previous Entries"""
         lookup_menu_choice = None
@@ -200,7 +251,20 @@ class ConsoleUI:
             if lookup_menu_choice == 'N':
                 self.lookup_by_employee()
             elif lookup_menu_choice == 'D':
-                pass
+                date_search_choice = ''
+                while date_search_choice != 'B':
+                    self.clear_console()
+                    print(self.format_header('Lookup by Date'))
+                    print('[E] Search for exact date\n'
+                          '[R] Search by date range\n'
+                          '[B] Back to Lookup Menu')
+                    date_search_choice = input('> ').upper().strip()
+                    if date_search_choice == 'E':
+                        self.lookup_entries_by_exact_date()
+                        break
+                    elif date_search_choice == 'R':
+                        self.lookup_entries_by_date_range()
+                        break
             elif lookup_menu_choice == 'T':
                 search_time = self.get_positive_int('Enter a Task Time to search for (minutes)')
                 entries = Entry.select().order_by(Entry.created_timestamp).where(Entry.task_time == search_time)
