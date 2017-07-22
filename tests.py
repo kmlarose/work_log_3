@@ -23,9 +23,9 @@ class TestConsoleUI(unittest.TestCase):
         with captured_stdout() as stdout:
             test_console = ConsoleUI()
             test_console.display_main_menu()
-        self.assertEqual(stdout.getvalue(), ('[A] Add New Entry\n'
-                                             '[L] Lookup Previous Entries\n'
-                                             '[Q] Quit Work Log\n'))
+        self.assertIn(('[A] Add New Entry\n'
+                       '[L] Lookup Previous Entries\n'
+                       '[Q] Quit Work Log\n'), stdout.getvalue())
 
     def test_run_edit_menu(self):
         """Test the edit menu has the right output"""
@@ -110,6 +110,15 @@ class TestConsoleUI(unittest.TestCase):
             with self.assertRaises(EOFError):
                 test_console.display_one_at_a_time(Entry.select())
 
+    def test_display_entries_with_no_results(self):
+        """Make sure the program doesn't break if there's no lookup results"""
+        test_console = ConsoleUI()
+        with captured_stdin() as stdin, captured_stdout() as stdout:
+            stdin.write('test')
+            stdin.seek(0)
+            test_console.display_one_at_a_time(Entry.select().where(Entry.created_timestamp == datetime.datetime.now()))
+            self.assertIn('Sorry, no entries found', stdout.getvalue())
+
     def test_add_entry(self):
         test_console = ConsoleUI()
         with unittest.mock.patch('builtins.input', side_effect=['Test Name', 'Test Task', '999', 'Test Notes', 'y']):
@@ -168,6 +177,19 @@ class TestConsoleUI(unittest.TestCase):
             self.assertFalse(test_console.delete_entry(entry))
         with unittest.mock.patch('builtins.input', return_value='y'):
             self.assertTrue(test_console.delete_entry(entry))
+
+    def test_lookup_by_time(self):
+        test_console = ConsoleUI()
+        with unittest.mock.patch('builtins.input', side_effect=['unittest', 'Test Time Lookup',
+                                                                '777888', 'this should get deleted...', 'y']):
+            test_console.add_new_entry()
+        with unittest.mock.patch('builtins.input', side_effect=['t', '777888', 'b', 'b']), captured_stdout() as stdout:
+            test_console.lookup_entries()
+            self.assertIn('Test Time Lookup', stdout.getvalue())
+        with unittest.mock.patch('builtins.input', return_value='y'):
+            self.assertTrue(test_console.delete_entry(Entry.select().where(Entry.task_name == 'Test Time Lookup')[0]))
+
+
 
 
 class TestEntryClass(unittest.TestCase):
