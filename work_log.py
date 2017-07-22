@@ -158,7 +158,10 @@ class ConsoleUI:
                 entries = Entry.select().order_by(Entry.created_timestamp).where(Entry.task_time == search_time)
                 self.display_one_at_a_time(entries)
             elif lookup_menu_choice == 'S':
-                pass
+                search_term = self.get_required_string('Search Entries for')
+                entries = Entry.select().order_by(Entry.created_timestamp).where(Entry.task_name.contains(search_term) |
+                                                                                 Entry.task_notes.contains(search_term))
+                self.display_one_at_a_time(entries)
 
     def display_main_menu(self):
         """Prints the Main Menu to Console"""

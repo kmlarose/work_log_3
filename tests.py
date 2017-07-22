@@ -189,6 +189,16 @@ class TestConsoleUI(unittest.TestCase):
         with unittest.mock.patch('builtins.input', return_value='y'):
             self.assertTrue(test_console.delete_entry(Entry.select().where(Entry.task_name == 'Test Time Lookup')[0]))
 
+    def test_lookup_by_search(self):
+        test_console = ConsoleUI()
+        with unittest.mock.patch('builtins.input', side_effect=['unittest', 'Test Search Lookup',
+                                                                '999', 'this should get deleted...', 'y']):
+            test_console.add_new_entry()
+        with unittest.mock.patch('builtins.input', side_effect=['s', 'search lookup', 'b', 'b']), captured_stdout() as stdout:
+            test_console.lookup_entries()
+            self.assertIn('Test Search Lookup', stdout.getvalue())
+        with unittest.mock.patch('builtins.input', return_value='y'):
+            self.assertTrue(test_console.delete_entry(Entry.select().where(Entry.task_name == 'Test Search Lookup')[0]))
 
 
 
