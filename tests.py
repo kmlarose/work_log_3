@@ -200,6 +200,34 @@ class TestConsoleUI(unittest.TestCase):
         with unittest.mock.patch('builtins.input', return_value='y'):
             self.assertTrue(test_console.delete_entry(Entry.select().where(Entry.task_name == 'Test Search Lookup')[0]))
 
+    def test_lookup_by_name(self):
+        test_console = ConsoleUI()
+        with unittest.mock.patch('builtins.input', side_effect=['unittest', 'Test Name Lookup',
+                                                                '999', 'this should get deleted...', 'y']):
+            test_console.add_new_entry()
+        with unittest.mock.patch('builtins.input',
+                                 side_effect=['n', 'unittest', 'b', 'b']), captured_stdout() as stdout:
+            test_console.lookup_entries()
+            self.assertIn('Test Name Lookup', stdout.getvalue())
+        with unittest.mock.patch('builtins.input', return_value='y'):
+            self.assertTrue(test_console.delete_entry(Entry.select().where(Entry.task_name == 'Test Name Lookup')[0]))
+
+    def test_lookup_by_multiple_names(self):
+        test_console = ConsoleUI()
+        with unittest.mock.patch('builtins.input', side_effect=['unittest', 'Test Name Lookup',
+                                                                '999', 'this should get deleted...', 'y']):
+            test_console.add_new_entry()
+        with unittest.mock.patch('builtins.input', side_effect=['unittest 2', 'Test Name Lookup',
+                                                                '999', 'this should get deleted...', 'y']):
+            test_console.add_new_entry()
+        with unittest.mock.patch('builtins.input',
+                                 side_effect=['n', 'unittest', 'unittest', 'b', 'b']), captured_stdout() as stdout:
+            test_console.lookup_entries()
+            self.assertIn('1 of 1', stdout.getvalue())
+        with unittest.mock.patch('builtins.input', return_value='y'):
+            self.assertTrue(test_console.delete_entry(Entry.select().where(Entry.task_name == 'Test Name Lookup')[0]))
+        with unittest.mock.patch('builtins.input', return_value='y'):
+            self.assertTrue(test_console.delete_entry(Entry.select().where(Entry.task_name == 'Test Name Lookup')[0]))
 
 
 class TestEntryClass(unittest.TestCase):
