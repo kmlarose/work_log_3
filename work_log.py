@@ -139,8 +139,26 @@ class ConsoleUI:
 
     def lookup_entries(self):
         """Lookup Previous Entries"""
-        entries = Entry.select().order_by(Entry.created_timestamp.desc())
-        self.display_one_at_a_time(entries)
+        lookup_menu_choice = None
+        while lookup_menu_choice != 'B':
+            self.clear_console()
+            print('[N] Lookup by Employee Name\n'
+                  '[D] Lookup by Created Date\n'
+                  '[T] Lookup by Time Spent\n'
+                  '[S] Lookup by Search Term\n'
+                  '[B] Back to Main Menu')
+
+            lookup_menu_choice = input('> ').upper().strip()
+            if lookup_menu_choice == 'N':
+                pass
+            elif lookup_menu_choice == 'D':
+                pass
+            elif lookup_menu_choice == 'T':
+                search_time = self.get_positive_int('Enter a Task Time to search for (minutes)')
+                entries = Entry.select().order_by(Entry.created_timestamp).where(Entry.task_time == search_time)
+                self.display_one_at_a_time(entries)
+            elif lookup_menu_choice == 'S':
+                pass
 
     def display_main_menu(self):
         """Prints the Main Menu to Console"""
