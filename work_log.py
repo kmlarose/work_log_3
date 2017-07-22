@@ -137,6 +137,54 @@ class ConsoleUI:
                 elif lookup_menu_choice == 'N' and not is_last_entry:
                     idx += 1
 
+    def lookup_by_employee(self):
+        """Find Entries by Employee Name"""
+        self.clear_console()
+        print(self.format_header('Lookup by Employee'))
+
+        get_employee_names = Entry.select().distinct(Entry.employee_name).execute()
+        employee_names = set()
+        [employee_names.add(employee.employee_name.title()) for employee in get_employee_names]
+        # allow the user to choose from a name
+        [print(name) for name in employee_names]
+        while True:
+            chosen_name = input('Choose an employee: ').strip()
+            if chosen_name == '':
+                print('Please choose from the list of available names, or type "back" to return to lookup menu')
+                continue
+            # get the number of matches...
+            name_matches = ConsoleUI.get_matches(chosen_name, employee_names)
+            if len(name_matches) > 1:
+                # clarify...
+                while True:
+                    print(self.clear_console())
+                    print('Multiple matches:')
+                    [print(name) for name in name_matches]
+                    specific_name = input('Choose an exact name, or enter "all" to get all matches: ').lower().strip()
+                    if specific_name == 'all':
+                        # return all results
+                        entries = Entry.select().order_by(Entry.created_timestamp.desc())
+                        entries = entries.where(fn.Lower(Entry.employee_name).contains(chosen_name.lower()))
+                        self.display_one_at_a_time(entries)
+                        return True
+                    elif specific_name.title() in name_matches:
+                        # return the specific name results
+                        entries = Entry.select().order_by(Entry.created_timestamp.desc())
+                        entries = entries.where(fn.Lower(Entry.employee_name) == specific_name.lower())
+                        self.display_one_at_a_time(entries)
+                        return True
+            elif len(name_matches) == 1:
+                # run the query
+                entries = Entry.select().order_by(Entry.created_timestamp.desc())
+                entries = entries.where(fn.Lower(Entry.employee_name) == chosen_name.lower())
+                self.display_one_at_a_time(entries)
+                return True
+            elif chosen_name == 'Back':
+                break
+            else:
+                # no matches...
+                print('Please choose from the list of available names, or type "back" to return to lookup menu')
+
     def lookup_entries(self):
         """Lookup Previous Entries"""
         lookup_menu_choice = None
@@ -150,7 +198,7 @@ class ConsoleUI:
 
             lookup_menu_choice = input('> ').upper().strip()
             if lookup_menu_choice == 'N':
-                pass
+                self.lookup_by_employee()
             elif lookup_menu_choice == 'D':
                 pass
             elif lookup_menu_choice == 'T':
@@ -237,6 +285,15 @@ class ConsoleUI:
             entry.delete_instance()
             return True
         return False
+
+    @staticmethod
+    def get_matches(string, some_iterable):
+        """Finds the number of matches for a string inside some iterable"""
+        matches = []
+        for item in some_iterable:
+            if string.lower() in item.lower():
+                matches.append(item)
+        return matches
 
 if __name__ == "__main__":
     initialize()
