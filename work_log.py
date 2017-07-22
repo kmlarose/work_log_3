@@ -186,6 +186,7 @@ class ConsoleUI:
                 print('Please choose from the list of available names, or type "back" to return to lookup menu')
 
     def lookup_entries_by_exact_date(self):
+        """Display Entry Dates and allows the user to look up entries by exact date"""
         get_created_dates = Entry.select().distinct(Entry.created_timestamp).execute()
         created_dates = set()
         [created_dates.add(entry.created_timestamp.strftime('%m-%d-%Y')) for entry in get_created_dates]
