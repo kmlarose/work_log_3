@@ -194,12 +194,12 @@ class TestConsoleUI(unittest.TestCase):
     def test_lookup_by_search(self):
         """Makes sure entries can be looked up by search term"""
         test_console = ConsoleUI()
-        with unittest.mock.patch('builtins.input', side_effect=['unittest', 'Test Search Lookup',
+        with unittest.mock.patch('builtins.input', side_effect=['unittest', 'kutfvjvhykjtcvk',
                                                                 '999', 'this should get deleted...', 'y']):
             test_console.add_new_entry()
-        with unittest.mock.patch('builtins.input', side_effect=['s', 'search', 'b', 'b']), captured_stdout() as stdout:
+        with unittest.mock.patch('builtins.input', side_effect=['s', 'kutfvjvhykjtcvk', 'b', 'b']), captured_stdout() as stdout:
             test_console.lookup_entries()
-            self.assertIn('Test Search Lookup', stdout.getvalue())
+            self.assertIn('kutfvjvhykjtcvk', stdout.getvalue())
 
     def test_lookup_by_name(self):
         """Makes sure entries can be looked up by worker name"""
