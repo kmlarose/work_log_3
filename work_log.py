@@ -242,6 +242,7 @@ class ConsoleUI:
         lookup_menu_choice = None
         while lookup_menu_choice != 'B':
             self.clear_console()
+            print(self.format_header('Lookup Entries'))
             print('[N] Lookup by Employee Name\n'
                   '[D] Lookup by Created Date\n'
                   '[T] Lookup by Time Spent\n'

@@ -142,7 +142,7 @@ class TestConsoleUI(unittest.TestCase):
     def test_edit_entry_name(self):
         """Makes sure the Entry task name can be successfully edited"""
         test_console = ConsoleUI()
-        with unittest.mock.patch('builtins.input', side_effect=['Test Name', 'Test Task', '999', 'Test Notes', 'y']):
+        with unittest.mock.patch('builtins.input', side_effect=['Test Name', 'Test Task', '999', 'Is this the one?', 'y']):
             test_console.add_new_entry()
         with unittest.mock.patch('builtins.input', side_effect=['t', 'unittest', 'y']):
             entry = Entry.select().where(Entry.task_name == 'Test Task')[0]
@@ -205,7 +205,7 @@ class TestConsoleUI(unittest.TestCase):
         """Makes sure entries can be looked up by worker name"""
         test_console = ConsoleUI()
         with unittest.mock.patch('builtins.input', side_effect=['unittest', 'Test Name Lookup',
-                                                                '999', 'this should get deleted...', 'y']):
+                                                                '999', 'is it this one?', 'y']):
             test_console.add_new_entry()
         with unittest.mock.patch('builtins.input',
                                  side_effect=['n', 'unittest', 'b', 'b']), captured_stdout() as stdout:
@@ -216,7 +216,7 @@ class TestConsoleUI(unittest.TestCase):
         """Makes sure name lookup can handle multiple name matches"""
         test_console = ConsoleUI()
         with unittest.mock.patch('builtins.input', side_effect=['unittest', 'Test Name Lookup',
-                                                                '999', 'this should get deleted...', 'y']):
+                                                                '999', 'or this one?', 'y']):
             test_console.add_new_entry()
         with unittest.mock.patch('builtins.input', side_effect=['unittest 2', 'Test Name Lookup',
                                                                 '999', 'this should get deleted...', 'y']):
@@ -263,6 +263,8 @@ class TestConsoleUI(unittest.TestCase):
         entries = Entry.select()
         for entry in entries:
             if 'unittest' in entry.employee_name:
+                entry.delete_instance()
+            if 'unittest' in entry.task_name:
                 entry.delete_instance()
 
 
