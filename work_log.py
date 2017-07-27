@@ -4,7 +4,7 @@ import os
 
 from peewee import *
 
-db = SqliteDatabase('work_log.db')
+db = SqliteDatabase('entries.db')
 
 
 class Entry(Model):
@@ -219,13 +219,13 @@ class ConsoleUI:
         self.clear_console()
         print(self.format_header('Lookup by Date Range'))
         print('Search for entries from...')
-        from_date = ConsoleUI.get_a_date('enter From Date (MM-DD-YYY')
+        from_date = ConsoleUI.get_a_date('enter From Date')
         self.clear_console()
         print(self.format_header('Lookup by Date Range'))
         print('Search for entries from {} to...'.format(from_date.strftime('%m-%d-%Y')))
         # get the end date
         while True:
-            to_date = ConsoleUI.get_a_date('enter To date (MM-DD-YYYY)')
+            to_date = ConsoleUI.get_a_date('enter To date')
             if to_date.strftime('%m-%d-%Y') < from_date.strftime('%m-%d-%Y'):
                 print('Please enter a date AFTER the From Date')
             else:
